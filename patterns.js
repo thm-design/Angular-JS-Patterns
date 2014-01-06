@@ -22,7 +22,7 @@
           };
         });
         
-        // add directive name to nav element must be <a> tag for href comparision
+        // add directive name to nav element must be <a> tag for href comparison
         <a href="#resume" active-nav="1">Resume</a>
         
 //===================================== global error handler (http://blog.tomaka17.com/2012/12/random-tricks-when-using-angularjs/)  ===============================
