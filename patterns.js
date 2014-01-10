@@ -1,3 +1,82 @@
+  //===================================== Preloader element/overlay/gif/whatever=============================== 
+  
+  // https://gist.github.com/maikeldaloo/5140733
+  // Just inject this into your app like so
+  //var thmApp = angular.module('thmApp', ['LoadingIndicator']);
+  
+var module = angular.module('LoadingIndicator', []);
+ 
+module.config(['$httpProvider', function($httpProvider) {
+    var interceptor = ['$q', 'LoadingIndicatorHandler', function($q, LoadingIndicatorHandler) {
+        return function(promise) {
+            LoadingIndicatorHandler.enable();
+            
+            return promise.then(
+                function( response ) {
+                    LoadingIndicatorHandler.disable();
+                    
+                    return response;
+                },
+                function( response ) {
+                    LoadingIndicatorHandler.disable();
+                    
+                    // Reject the reponse so that angular isn't waiting for a response.
+                    return $q.reject( response );
+                }
+            );
+        };
+    }];
+    
+    $httpProvider.responseInterceptors.push(interceptor);
+}]);
+ 
+/**
+ * LoadingIndicatorHandler object to show a loading animation while we load the next page or wait
+ * for a request to finish.
+ */
+module.factory('LoadingIndicatorHandler', ['$timeout', '$document', function($timeout)
+{
+    // The element we want to show/hide.
+    var $element = $('#loading-indicator');
+    
+    return {
+        // Counters to keep track of how many requests are sent and to know
+        // when to hide the loading element.
+        enable_count: 0,
+        disable_count: 0,
+        
+        /**
+         * Fade the blocker in to block the screen.
+         *
+         * @return {void}
+         */
+        enable: function() {
+            this.enable_count++;
+            
+            if ( $element.length ) {
+              $element.show(); 
+            }
+        },
+        
+        /**
+         * Fade the blocker out to unblock the screen.
+         *
+         * @return {void}
+         */
+        disable: function() {
+            this.disable_count++;
+            
+            if ( this.enable_count == this.disable_count ) {
+                if ( $element.length ) {
+                  $(window).scrollTop(0);
+                  $timeout(function(){$element.fadeOut();},300); 
+                  
+                }
+            } 
+        }
+    }
+}]);
+
 //===================================== active-nav ===============================
   
   app.directive("activeNav",function($location) { 
@@ -74,81 +153,4 @@
             };
             return directiveDefinitionObject;
         });
-  //===================================== Preloader element/overlay/gif/whatever=============================== 
-  
-  // https://gist.github.com/maikeldaloo/5140733
-  // Just inject this into your app like so
-  //var thmApp = angular.module('thmApp', ['ngRoute', 'ngSanitize', 'LoadingIndicator']);
-  
-var module = angular.module('LoadingIndicator', []);
- 
-module.config(['$httpProvider', function($httpProvider) {
-    var interceptor = ['$q', 'LoadingIndicatorHandler', function($q, LoadingIndicatorHandler) {
-        return function(promise) {
-            LoadingIndicatorHandler.enable();
-            
-            return promise.then(
-                function( response ) {
-                    LoadingIndicatorHandler.disable();
-                    
-                    return response;
-                },
-                function( response ) {
-                    LoadingIndicatorHandler.disable();
-                    
-                    // Reject the reponse so that angular isn't waiting for a response.
-                    return $q.reject( response );
-                }
-            );
-        };
-    }];
-    
-    $httpProvider.responseInterceptors.push(interceptor);
-}]);
- 
-/**
- * LoadingIndicatorHandler object to show a loading animation while we load the next page or wait
- * for a request to finish.
- */
-module.factory('LoadingIndicatorHandler', ['$timeout', '$document', function($timeout)
-{
-    // The element we want to show/hide.
-    var $element = $('#loading-indicator');
-    
-    return {
-        // Counters to keep track of how many requests are sent and to know
-        // when to hide the loading element.
-        enable_count: 0,
-        disable_count: 0,
-        
-        /**
-         * Fade the blocker in to block the screen.
-         *
-         * @return {void}
-         */
-        enable: function() {
-            this.enable_count++;
-            
-            if ( $element.length ) {
-              $element.show(); 
-            }
-        },
-        
-        /**
-         * Fade the blocker out to unblock the screen.
-         *
-         * @return {void}
-         */
-        disable: function() {
-            this.disable_count++;
-            
-            if ( this.enable_count == this.disable_count ) {
-                if ( $element.length ) {
-                  $(window).scrollTop(0);
-                  $timeout(function(){$element.fadeOut();},300); 
-                  
-                }
-            } 
-        }
-    }
-}]);
+
